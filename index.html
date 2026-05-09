@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1B5E20">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="REPower">
+<title>REPower News</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --g900:#1B5E20;--g800:#2E7D32;--g600:#388E3C;
+  --g100:#C8E6C9;--g50:#E8F5E9;
+  --t1:#1a1a1a;--t2:#444;--t3:#888;
+  --card:#fff;--bdr:#e0e0e0;--r:16px;
+}
+html,body{height:100%;overflow:hidden;background:#111}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;color:var(--t1);-webkit-font-smoothing:antialiased;display:flex;flex-direction:column}
+.hdr{background:var(--g900);flex-shrink:0;box-shadow:0 2px 10px rgba(0,0,0,.3);z-index:50}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;padding:12px 16px 8px;max-width:700px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:8px;color:#fff;font-size:17px}
+.logo strong{font-weight:700}
+.hright{display:flex;align-items:center;gap:8px}
+.live{width:8px;height:8px;border-radius:50%;background:#4CAF50;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(76,175,80,.5)}70%{box-shadow:0 0 0 6px rgba(76,175,80,0)}100%{box-shadow:0 0 0 0 rgba(76,175,80,0)}}
+.ibtn{background:rgba(255,255,255,.12);border:none;color:#fff;width:36px;height:36px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.ibtn:active{background:rgba(255,255,255,.28)}
+.spin svg{animation:rot .6s linear}
+@keyframes rot{to{transform:rotate(360deg)}}
+.tabs{display:flex;max-width:700px;margin:0 auto;padding:0 4px}
+.tab{flex:1;display:flex;align-items:center;justify-content:center;gap:5px;padding:9px 6px;background:none;border:none;border-bottom:2.5px solid transparent;color:rgba(255,255,255,.5);font-size:12.5px;font-weight:500;cursor:pointer;transition:color .2s,border-color .2s;white-space:nowrap}
+.tab.on{color:#fff;border-bottom-color:var(--g100)}
+.status{background:var(--g50);color:var(--g800);font-size:11px;text-align:center;padding:5px 14px;flex-shrink:0}
+.feed-wrap{flex:1;overflow:hidden;position:relative;max-width:700px;margin:0 auto;width:100%}
+.feed{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.feed::-webkit-scrollbar{display:none}
+/* Inshorts card */
+.card{scroll-snap-align:start;height:100%;display:flex;flex-direction:column;background:var(--card);position:relative;overflow:hidden}
+.card-img{width:100%;height:48%;flex-shrink:0;position:relative;overflow:hidden;background:#1a2a1a}
+.card-img img{width:100%;height:100%;object-fit:cover;display:block;opacity:0;transition:opacity .5s}
+.card-img img.loaded{opacity:1}
+.img-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,rgba(0,0,0,.05) 0%,rgba(0,0,0,.6) 100%)}
+.cat-badge{position:absolute;top:12px;left:12px;background:var(--g900);color:#fff;font-size:10px;font-weight:700;padding:4px 10px;border-radius:20px;text-transform:uppercase;letter-spacing:.5px;z-index:2}
+.src-badge{position:absolute;bottom:10px;left:12px;font-size:10px;font-weight:700;color:#fff;background:rgba(27,94,32,.85);padding:3px 9px;border-radius:20px;z-index:2;text-transform:uppercase;letter-spacing:.4px}
+.img-meta{position:absolute;bottom:10px;right:12px;display:flex;gap:5px;z-index:2}
+.img-meta span{font-size:10px;color:rgba(255,255,255,.9);background:rgba(0,0,0,.45);padding:2px 7px;border-radius:20px}
+.card-body{flex:1;padding:16px 16px 12px;display:flex;flex-direction:column;overflow:hidden;background:#fff}
+.headline{font-size:16px;font-weight:800;color:var(--t1);line-height:1.38;margin-bottom:10px;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.summary{font-size:13.5px;color:var(--t2);line-height:1.7;flex:1;overflow:hidden;display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical}
+.card-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:0.5px solid var(--bdr)}
+.vbadge{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px}
+.vdot{width:5px;height:5px;border-radius:50%}
+.hi{background:#E8F5E9;color:#2E7D32}.hi .vdot{background:#4CAF50}
+.md{background:#FFF8E1;color:#E65100}.md .vdot{background:#FF9800}
+.swipe-hint{font-size:11px;color:var(--t3);display:flex;align-items:center;gap:3px}
+/* Skeleton */
+.sk-card{scroll-snap-align:start;height:100%;display:flex;flex-direction:column;background:#fff}
+.sk-img{width:100%;height:48%;background:#e0e0e0;position:relative;overflow:hidden}
+.sk-img::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.4),transparent);background-size:300% 100%;animation:shim 1.4s infinite}
+.sk-body{flex:1;padding:16px;display:flex;flex-direction:column;gap:10px}
+.sk-line{height:13px;border-radius:5px;background:linear-gradient(90deg,#ececec 25%,#d8d8d8 50%,#ececec 75%);background-size:300% 100%;animation:shim 1.4s infinite}
+.sk-s{width:32%}.sk-l{width:100%}.sk-m{width:70%}
+@keyframes shim{0%{background-position:100% 50%}100%{background-position:-100% 50%}}
+/* Error */
+.err-card{scroll-snap-align:start;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#fff;padding:32px 24px;text-align:center;gap:10px}
+.err-ico{font-size:40px}
+.err-t{font-size:16px;font-weight:700;color:var(--t1)}
+.err-s{font-size:13px;color:var(--t3);line-height:1.65;max-width:280px}
+.retry-btn{background:var(--g900);color:#fff;border:none;padding:12px 28px;border-radius:24px;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px}
+/* Dots */
+.dots{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:5px;z-index:10}
+.dot-i{width:6px;height:6px;border-radius:50%;background:rgba(0,0,0,.2);transition:all .2s;cursor:pointer}
+.dot-i.on{background:var(--g800);height:18px;border-radius:3px}
+/* Setup modal */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:200;display:flex;align-items:flex-end;justify-content:center}
+.modal{background:#fff;border-radius:20px 20px 0 0;padding:26px 20px 44px;width:100%;max-width:520px;animation:slideup .25s ease}
+@keyframes slideup{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.modal h2{font-size:17px;font-weight:700;margin-bottom:8px}
+.modal p{font-size:13.5px;color:var(--t2);line-height:1.65;margin-bottom:14px}
+.modal a{color:var(--g800);font-weight:600}
+.inp{width:100%;border:2px solid var(--bdr);border-radius:10px;padding:12px 14px;font-size:13px;outline:none;transition:border-color .2s;margin-bottom:12px;font-family:monospace}
+.inp:focus{border-color:var(--g600)}
+.savebtn{width:100%;background:var(--g900);color:#fff;border:none;padding:14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer}
+.note{font-size:11.5px;color:var(--t3);text-align:center;margin-top:9px;line-height:1.5}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(20px);background:#1a1a1a;color:#fff;font-size:13px;padding:9px 18px;border-radius:24px;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;z-index:300}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+/* Sources footer */
+.src-footer{background:var(--card);border-top:0.5px solid var(--bdr);padding:10px 14px;flex-shrink:0}
+.src-label{font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:5px}
+.src-pills{display:flex;flex-wrap:wrap;gap:4px}
+.src-pill{font-size:10px;color:var(--t2);background:#f5f5f5;border:0.5px solid var(--bdr);padding:2px 7px;border-radius:20px}
+@media(min-width:700px){
+  html,body{overflow:auto;height:auto}
+  .feed-wrap{overflow:visible;height:auto}
+  .feed{overflow:visible;scroll-snap-type:none;display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:14px}
+  .card,.sk-card,.err-card{height:500px;border-radius:var(--r);overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.1);scroll-snap-align:unset}
+  .err-card{grid-column:1/-1}
+  .dots{display:none}
+}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-top">
+    <div class="logo">
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
+        <circle cx="13" cy="13" r="13" fill="rgba(255,255,255,0.15)"/>
+        <path d="M15 4L7 14h7l-3 8 10-12h-7l2-6z" fill="#A5D6A7" stroke="#A5D6A7" stroke-width="0.5" stroke-linejoin="round"/>
+      </svg>
+      <span>REPower <strong>News</strong></span>
+    </div>
+    <div class="hright">
+      <div class="live"></div>
+      <button class="ibtn" id="setupBtn" title="Settings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      </button>
+      <button class="ibtn" id="rfBtn" title="Refresh">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 4v6h-6"/><path d="M1 20v-6h6"/>
+          <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab on" data-t="industry">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+      Industry News
+    </button>
+    <button class="tab" data-t="tech">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg>
+      Tech & Innovation
+    </button>
+  </div>
+</div>
+
+<div id="statusBar" class="status" style="display:none"></div>
+
+<div class="feed-wrap">
+  <div id="feed" class="feed"></div>
+  <div id="dots" class="dots"></div>
+</div>
+
+<div class="src-footer">
+  <div class="src-label">Sources (25+)</div>
+  <div class="src-pills">
+    <span class="src-pill">Reuters</span><span class="src-pill">BBC</span><span class="src-pill">The Hindu</span>
+    <span class="src-pill">Times of India</span><span class="src-pill">Economic Times</span>
+    <span class="src-pill">Business Standard</span><span class="src-pill">Livemint</span>
+    <span class="src-pill">Bloomberg</span><span class="src-pill">NDTV</span>
+    <span class="src-pill">CleanTechnica</span><span class="src-pill">PV Magazine</span>
+    <span class="src-pill">Mercom India</span><span class="src-pill">Electrek</span>
+    <span class="src-pill">IRENA</span><span class="src-pill">IEA</span>
+    <span class="src-pill">Bloomberg NEF</span><span class="src-pill">Wood Mackenzie</span>
+    <span class="src-pill">S&amp;P Global</span><span class="src-pill">Financial Times</span>
+  </div>
+</div>
+
+<!-- Setup Modal -->
+<div class="overlay" id="modal" style="display:none" onclick="onOvl(event)">
+  <div class="modal">
+    <h2>⚙️ Worker URL Setup</h2>
+    <p>Enter your Cloudflare Worker URL below.<br>
+    It looks like: <b>https://repower-news.YOUR-NAME.workers.dev</b></p>
+    <input class="inp" id="workerInp" type="url" placeholder="https://repower-news.your-name.workers.dev" autocomplete="off">
+    <button class="savebtn" id="saveBtn">Save &amp; Load News →</button>
+    <p class="note">🔒 Saved only on this device.</p>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const IMG_MAP = {
+  'Solar Tender':'solar panels farm india','Wind Auction':'wind turbines field sky',
+  'Green Finance':'renewable energy finance','Project Commission':'solar power plant',
+  'Policy Update':'clean energy government','Power Trading':'electricity power grid',
+  'M&A Deal':'energy company business','Offshore Wind':'offshore wind turbines ocean',
+  'Grid Expansion':'power transmission lines','Rooftop Solar':'rooftop solar panels building',
+  'Solar Tech':'solar cell laboratory','Battery Innovation':'battery energy storage facility',
+  'Green Hydrogen':'hydrogen fuel electrolyzer','Offshore Wind Tech':'floating wind turbine sea',
+  'Grid Technology':'smart electricity grid','EV Technology':'electric vehicle charging station',
+  'Energy Storage':'large scale energy storage','Carbon Tech':'carbon capture plant',
+  'Smart Grid':'smart grid technology','Agrivoltaics':'solar panels agriculture field',
+  'Wave Energy':'ocean wave energy device','Building Solar':'solar panels modern building',
+};
+
+function imgUrl(cat, idx) {
+  const q = encodeURIComponent(IMG_MAP[cat] || 'renewable energy');
+  return `https://source.unsplash.com/featured/800x500/?${q}&sig=${idx}`;
+}
+
+let curTab='industry', loading=false, cache={}, curIdx=0;
+const CACHE_MS=20*60*1000;
+
+const $feed=document.getElementById('feed');
+const $dots=document.getElementById('dots');
+const $status=document.getElementById('statusBar');
+const $modal=document.getElementById('modal');
+const $toast=document.getElementById('toast');
+
+function getWorkerUrl(){try{return localStorage.getItem('rp_worker')||'';}catch{return '';}}
+function setWorkerUrl(u){try{localStorage.setItem('rp_worker',u);}catch{}}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>switchTab(b.dataset.t)));
+  document.getElementById('rfBtn').addEventListener('click',()=>{
+    const b=document.getElementById('rfBtn');
+    b.classList.add('spin');setTimeout(()=>b.classList.remove('spin'),700);
+    cache={};loadTab(curTab);
+  });
+  document.getElementById('setupBtn').addEventListener('click',showModal);
+  document.getElementById('saveBtn').addEventListener('click',saveWorker);
+  document.getElementById('workerInp').addEventListener('keydown',e=>{if(e.key==='Enter')saveWorker();});
+  $feed.addEventListener('scroll',onScroll,{passive:true});
+  if(!getWorkerUrl()) showModal();
+  else loadTab('industry');
+});
+
+function showModal(){$modal.style.display='flex';document.getElementById('workerInp').value=getWorkerUrl();setTimeout(()=>document.getElementById('workerInp').focus(),150);}
+function hideModal(){$modal.style.display='none';}
+function onOvl(e){if(e.target===$modal)hideModal();}
+function saveWorker(){
+  const u=document.getElementById('workerInp').value.trim();
+  if(!u.startsWith('http')){showToast('Please enter a valid URL');return;}
+  setWorkerUrl(u);hideModal();cache={};loadTab(curTab);
+}
+
+function switchTab(t){
+  curTab=t;curIdx=0;
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  if(cache[t]&&Date.now()-cache[t].ts<CACHE_MS){renderCards(cache[t].data);setStatus(`${cache[t].data.length} articles · tap ↺ to refresh`);}
+  else loadTab(t);
+}
+
+async function loadTab(tab){
+  if(loading)return;
+  const wu=getWorkerUrl();
+  if(!wu){showModal();return;}
+  loading=true;showSkel();setStatus('Loading latest renewable energy news…');
+  try{
+    const res=await fetch(wu,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tab})});
+    const data=await res.json();
+    if(!res.ok||data.error)throw new Error(data.error||`Error ${res.status}`);
+    if(!data.articles?.length)throw new Error('No articles returned. Please try again.');
+    cache[tab]={data:data.articles,ts:Date.now()};
+    renderCards(data.articles);
+    const d=new Date().toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    setStatus(`${data.articles.length} articles · ${d} · Swipe up for next`);
+    showToast('News updated');
+  }catch(e){
+    console.error(e);
+    $feed.innerHTML=`<div class="err-card"><div class="err-ico">⚠️</div><p class="err-t">Could not load news</p><p class="err-s">${e.message}</p><button class="retry-btn" onclick="retryLoad()">Try Again</button></div>`;
+    $dots.innerHTML='';setStatus('');
+  }finally{loading=false;}
+}
+function retryLoad(){cache={};loadTab(curTab);}
+
+function renderCards(articles){
+  $feed.innerHTML='';$dots.innerHTML='';curIdx=0;
+  articles.forEach((a,i)=>{
+    const v=Number(a.validity)||7;
+    const bc=v>=8?'hi':'md';
+    const vt=v>=8?`Verified · ${v}/10`:`Moderate · ${v}/10`;
+    const img=imgUrl(a.category,i+Math.floor(Date.now()/10000));
+    const card=document.createElement('div');
+    card.className='card';
+    card.innerHTML=`
+      <div class="card-img">
+        <img src="${img}" alt="" onload="this.classList.add('loaded')" onerror="this.src='https://source.unsplash.com/featured/800x500/?renewable+energy&sig=${i}'">
+        <div class="img-overlay"></div>
+        <div class="cat-badge">${x(a.category)}</div>
+        <div class="src-badge">${x(a.source)}</div>
+        <div class="img-meta"><span>${x(a.region)}</span><span>${x(a.timeAgo)}</span></div>
+      </div>
+      <div class="card-body">
+        <div class="headline">${x(a.headline)}</div>
+        <div class="summary">${x(a.summary)}</div>
+        <div class="card-footer">
+          <div class="vbadge ${bc}"><div class="vdot"></div>${vt}</div>
+          <div class="swipe-hint"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12l7 7 7-7"/></svg>Swipe up</div>
+        </div>
+      </div>`;
+    $feed.appendChild(card);
+    const dot=document.createElement('div');
+    dot.className=`dot-i${i===0?' on':''}`;
+    dot.onclick=()=>$feed.scrollTo({top:i*$feed.clientHeight,behavior:'smooth'});
+    $dots.appendChild(dot);
+  });
+  $feed.scrollTop=0;
+}
+
+function onScroll(){
+  const idx=Math.round($feed.scrollTop/$feed.clientHeight);
+  if(idx!==curIdx){curIdx=idx;document.querySelectorAll('.dot-i').forEach((d,i)=>d.classList.toggle('on',i===idx));}
+}
+function showSkel(){
+  $feed.innerHTML=[1,2,3].map(()=>`<div class="sk-card"><div class="sk-img"></div><div class="sk-body"><div class="sk-line sk-s"></div><div class="sk-line sk-l"></div><div class="sk-line sk-l"></div><div class="sk-line sk-m"></div></div></div>`).join('');
+  $dots.innerHTML='';
+}
+function setStatus(m){if(m){$status.style.display='block';$status.textContent=m;}else $status.style.display='none';}
+function showToast(m,ms=2500){$toast.textContent=m;$toast.classList.add('show');setTimeout(()=>$toast.classList.remove('show'),ms);}
+function x(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+</script>
+</body>
+</html>
